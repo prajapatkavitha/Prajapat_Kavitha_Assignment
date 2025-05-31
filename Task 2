@@ -1,0 +1,87 @@
+# Task 2: RAG-Based Quote Retrieval System (Offline JSONL Version)
+# 1. Setup & Install Dependencies
+!pip install faiss-cpu sentence-transformers -q
+import pandas as pd
+import numpy as np
+from sentence_transformers import SentenceTransformer
+import faiss
+import json
+import os
+from tqdm import tqdm
+from sklearn.metrics.pairwise import cosine_similarity
+# 2. Load Dataset from Local JSONL File
+with open("quotes.jsonl", "r", encoding="utf-8") as f:
+    data = [json.loads(line) for line in f]
+quotes = pd.DataFrame(data)
+print("\nSample:")
+print(quotes[['quote', 'author', 'tags']].head())
+# 3. Data Cleaning
+def preprocess(text):
+    return text.strip().replace("\n", " ").lower()
+quotes['quote_clean'] = quotes['quote'].apply(preprocess)
+quotes['meta'] = quotes.apply(lambda x: f"Author: {x['author']}, Tags: {', '.join(x['tags'])}", axis=1)
+# 4. Sentence Embedding (Fine-Tuning Optional)
+model = SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2")
+print("\nEncoding quotes...")
+quote_embeddings = model.encode(quotes['quote_clean'].tolist(), show_progress_bar=True)
+# 5. FAISS Index Creation
+dim = quote_embeddings[0].shape[0]
+index = faiss.IndexFlatL2(dim)
+index.add(np.array(quote_embeddings))
+# Save metadata mapping for retrieval
+id_to_meta = quotes[['quote', 'author', 'tags', 'meta']].to_dict(orient='records')
+# 6. Querying the Index
+def search_quotes(query, top_k=5):
+    query_vec = model.encode([preprocess(query)])
+    D, I = index.search(np.array(query_vec), top_k)
+    results = []
+    for idx in I[0]:
+        item = id_to_meta[idx]
+        results.append({
+            "quote": item['quote'],
+            "author": item['author'],
+            "tags": item['tags']
+        })
+    return results
+# 7. Test Search Function
+query = "quotes about courage by women"
+results = search_quotes(query)
+print(f"\n Results for: '{query}'\n")
+for r in results:
+    print(f"- {r['quote']} \n  — {r['author']} | Tags: {r['tags']}\n")
+# 8. Streamlit App Script (To be run separately)
+streamlit_code = '''
+import streamlit as st
+from sentence_transformers import SentenceTransformer
+import faiss
+import pandas as pd
+import numpy as np
+import json
+st.title("\ud83d\udcda Semantic Quote Finder")
+st.markdown("Enter a query like _'quotes about life by Einstein'_ or _'funny quotes by Oscar Wilde'.")
+@st.cache_resource
+def load_model():
+    return SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2")
+model = load_model()
+quotes = pd.read_csv("quotes.csv")
+id_to_meta = quotes.to_dict(orient='records')
+@st.cache_resource
+def build_index():
+    embeddings = model.encode(quotes['quote_clean'].tolist())
+    dim = embeddings[0].shape[0]
+    index = faiss.IndexFlatL2(dim)
+    index.add(np.array(embeddings))
+    return index, embeddings
+index, embeddings = build_index()
+query = st.text_input("Enter your quote query")
+if query:
+    qvec = model.encode([query])
+    D, I = index.search(np.array(qvec), 5)
+    st.subheader("Top Quotes:")
+    for idx in I[0]:
+        q = id_to_meta[idx]
+        st.markdown(f"> {q['quote']}\n\n — *{q['author']}* \n\n_Tags: {', '.join(eval(q['tags']))}_")
+'''
+# 9. Save Cleaned Dataset for Streamlit
+quotes.to_csv("quotes.csv", index=False)
+print("\n Saved 'quotes.csv' for use in the Streamlit app.")
