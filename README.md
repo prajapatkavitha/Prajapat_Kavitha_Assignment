@@ -43,6 +43,43 @@ The notebook is set up to install and import all required libraries.
 
 You can test the inference function by passing your own ticket text.
 
+# **Task 1 Output**
+
+--- Issue Type Classification Report ---
+                    precision    recall  f1-score   support
+
+    Account Access       1.00      1.00      1.00        23
+   Billing Problem       0.95      1.00      0.97        19
+   General Inquiry       1.00      1.00      1.00        25
+Installation Issue       1.00      1.00      1.00        29
+     Late Delivery       1.00      1.00      1.00        17
+    Product Defect       1.00      0.97      0.98        30
+        Wrong Item       1.00      1.00      1.00        23
+
+          accuracy                           0.99       166
+         macro avg       0.99      1.00      0.99       166
+      weighted avg       0.99      0.99      0.99       166
+
+
+--- Urgency Level Classification Report ---
+              precision    recall  f1-score   support
+
+        High       0.36      0.30      0.33        66
+         Low       0.28      0.40      0.33        43
+      Medium       0.35      0.30      0.32        57
+
+    accuracy                           0.33       166
+   macro avg       0.33      0.33      0.33       166
+weighted avg       0.33      0.33      0.33       166
+
+
+Test Ticket Analysis Result:
+{'issue_type': 'Product Defect', 'urgency_level': 'Low', 'entities': {'product': None, 'dates': ['2024-12-01'], 'keywords': ['late']}}
+Gradio not installed or running in non-Colab environment.
+
+
+
+
 # **Task 2: Semantic Quote Retrieval System (Offline JSONL Version)**
 
 Task 2 involved building a search system to find relevant quotes based on the meaning of a user’s query. Unlike keyword search, this uses semantic similarity so it understands the context and intent behind the query.
