@@ -1,6 +1,6 @@
-## **Overview**
+# **Overview**
 This repository contains solutions for two tasks assigned during the Vijayi WFH Internship:
-
+.[link](https://colab.research.google.com/drive/1owU3ZNnDgQfPY1-O3RfuEWoTLwLiCA4Q?usp=sharing)
 Task 1: Ticket Classification & Entity Extraction
 Task 2: Quote Retrieval System using Semantic Search (Offline JSONL Version)
 
@@ -43,7 +43,7 @@ The notebook is set up to install and import all required libraries.
 
 You can test the inference function by passing your own ticket text.
 
-# **Task 1 Output**
+## **Task 1 Output**
 
 --- Issue Type Classification Report ---
                     precision    recall  f1-score   support
@@ -113,4 +113,43 @@ Build embeddings and FAISS index
 Test the search function with sample queries
 
 Save the cleaned dataset (quotes.csv) and Streamlit app script (streamlit_quote_app.py)
+##** Task 2 Output**
+
+Sample:
+                                               quote                 author  \
+0     “Be yourself; everyone else is already taken.”            Oscar Wilde   
+1  “I'm selfish, impatient and a little insecure....         Marilyn Monroe   
+2  “Two things are infinite: the universe and hum...        Albert Einstein   
+3                   “So many books, so little time.”            Frank Zappa   
+4  “A room without books is like a body without a...  Marcus Tullius Cicero   
+
+                                                tags  
+0  [be-yourself, gilbert-perreira, honesty, inspi...  
+1  [best, life, love, mistakes, out-of-control, t...  
+2  [human-nature, humor, infinity, philosophy, sc...  
+3                                     [books, humor]  
+4                              [books, simile, soul]  
+
+Encoding quotes...
+Batches: 100%
+ 79/79 [01:08<00:00,  3.75it/s]
+
+ Results for: 'quotes about courage by women'
+
+- “I hate men who are afraid of women's strength.” 
+  — AnaÃ¯s Nin, | Tags: ['empowerment', 'feminism', 'woman', 'women-s-strenth']
+
+- “Courage is the most important of all the virtues because without courage, you can't practice any other virtue consistently.” 
+  — Maya Angelou | Tags: ['character', 'consistency', 'courage', 'determination', 'essence', 'ethos', 'fortitude', 'goodness', 'inspiration', 'life-lessons', 'persistence', 'resolve', 'self-reliance', 'strength', 'virtue', 'virtues']
+
+- “I, with a deeper instinct, choose a man who compels my strength, who makes enormous demands on me, who does not doubt my courage or my toughness, who does not believe me naÃ¯ve or innocent, who has the courage to treat me like a woman.” 
+  — AnaÃ¯s Nin | Tags: ['men', 'women']
+
+- “We believe in ordinary acts of bravery, in the courage that drives one person to stand up for another.” 
+  — Veronica Roth, | Tags: ['inspirational-quotes', 'strength-and-courage']
+
+- “Women who seek to be equal with men lack ambition.” 
+  — Timothy Leary | Tags: ['ambition', 'equality']
+
+ Saved 'quotes.csv' for use in the Streamlit 
 
