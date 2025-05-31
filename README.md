@@ -1,6 +1,8 @@
 # **Overview**
 This repository contains solutions for two tasks assigned during the Vijayi WFH Internship:
-.[link](https://colab.research.google.com/drive/1owU3ZNnDgQfPY1-O3RfuEWoTLwLiCA4Q?usp=sharing)
+
+.[Google Colab Link](https://colab.research.google.com/drive/1owU3ZNnDgQfPY1-O3RfuEWoTLwLiCA4Q?usp=sharing)
+
 Task 1: Ticket Classification & Entity Extraction
 Task 2: Quote Retrieval System using Semantic Search (Offline JSONL Version)
 
