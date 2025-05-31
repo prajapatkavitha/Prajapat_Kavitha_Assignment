@@ -45,6 +45,7 @@ The notebook is set up to install and import all required libraries.
 
 You can test the inference function by passing your own ticket text.
 
+
 ## **Task 1 Output**
 
 --- Issue Type Classification Report ---
@@ -115,8 +116,8 @@ Build embeddings and FAISS index
 Test the search function with sample queries
 
 Save the cleaned dataset (quotes.csv) and Streamlit app script (streamlit_quote_app.py)
-##** Task 2 Output**
 
+## **Task 2 Output**
 Sample:
                                                quote                 author  \
 0     “Be yourself; everyone else is already taken.”            Oscar Wilde   
@@ -124,7 +125,6 @@ Sample:
 2  “Two things are infinite: the universe and hum...        Albert Einstein   
 3                   “So many books, so little time.”            Frank Zappa   
 4  “A room without books is like a body without a...  Marcus Tullius Cicero   
-
                                                 tags  
 0  [be-yourself, gilbert-perreira, honesty, inspi...  
 1  [best, life, love, mistakes, out-of-control, t...  
