@@ -1,0 +1,115 @@
+# Task 1: Ticket Classification & Entity Extraction
+# 1. Setup & Library Imports
+import pandas as pd
+import numpy as np
+import re
+import string
+import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn.model_selection import train_test_split
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.linear_model import LogisticRegression
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import classification_report, confusion_matrix, accuracy_score
+from textblob import TextBlob
+import spacy
+from nltk.corpus import stopwords
+import nltk
+import warnings
+warnings.filterwarnings("ignore")
+nltk.download('stopwords')
+stop_words = set(stopwords.words('english'))
+nlp = spacy.load("en_core_web_sm")
+# 2. Load and Explore Dataset
+df = pd.read_excel("ai_dev_assignment_tickets_complex_1000.xls")
+print("\nInitial Data Preview:")
+df.head()
+# Drop rows with missing values in critical columns
+df.dropna(subset=['ticket_text', 'issue_type', 'urgency_level', 'product'], inplace=True)
+# 3. Preprocessing Functions
+def clean_text(text):
+    text = text.lower()
+    text = re.sub(r"[^a-zA-Z0-9\s]", "", text)
+    tokens = text.split()
+    tokens = [word for word in tokens if word not in stop_words]
+    doc = nlp(" ".join(tokens))
+    tokens = [token.lemma_ for token in doc]
+    return " ".join(tokens)
+# Apply cleaning
+df['clean_text'] = df['ticket_text'].apply(clean_text)
+# 4. Feature Engineering
+# TF-IDF
+vectorizer = TfidfVectorizer(max_features=1000)
+tfidf_matrix = vectorizer.fit_transform(df['clean_text'])
+# Extra Features
+df['ticket_length'] = df['ticket_text'].apply(lambda x: len(x))
+df['sentiment'] = df['ticket_text'].apply(lambda x: TextBlob(x).sentiment.polarity)
+from scipy.sparse import hstack
+extra_features = df[['ticket_length', 'sentiment']].values
+X = hstack([tfidf_matrix, extra_features])
+# 5. Model Training & Evaluation
+# -- Issue Type Classifier --
+X_train1, X_test1, y_train1, y_test1 = train_test_split(X, df['issue_type'], test_size=0.2, random_state=42)
+model_issue = LogisticRegression(max_iter=1000)
+model_issue.fit(X_train1, y_train1)
+y_pred1 = model_issue.predict(X_test1)
+print("\n--- Issue Type Classification Report ---")
+print(classification_report(y_test1, y_pred1))
+# -- Urgency Level Classifier --
+X_train2, X_test2, y_train2, y_test2 = train_test_split(X, df['urgency_level'], test_size=0.2, random_state=42)
+model_urgency = RandomForestClassifier()
+model_urgency.fit(X_train2, y_train2)
+y_pred2 = model_urgency.predict(X_test2)
+print("\n--- Urgency Level Classification Report ---")
+print(classification_report(y_test2, y_pred2))
+# 6. Entity Extraction
+complaint_keywords = ["broken", "late", "error", "not working", "delay", "crash"]
+def extract_entities(text):
+    entities = {}
+    text_lower = text.lower()
+    # Product name (simple match)
+    matched_products = [p for p in df['product'].unique() if p.lower() in text_lower]
+    entities['product'] = matched_products[0] if matched_products else None
+    # Dates
+    date_pattern = r'\b(?:\d{1,2}[/-]\d{1,2}[/-]\d{2,4}|\d{4}-\d{2}-\d{2})\b'
+    dates = re.findall(date_pattern, text)
+    entities['dates'] = dates
+    # Complaint keywords
+    found_keywords = [kw for kw in complaint_keywords if kw in text_lower]
+    entities['keywords'] = found_keywords
+    return entities
+# 7. Inference Function
+def analyze_ticket(ticket_text):
+    clean = clean_text(ticket_text)
+    vec = vectorizer.transform([clean])
+    length = len(ticket_text)
+    sentiment = TextBlob(ticket_text).sentiment.polarity
+    features = hstack([vec, [[length, sentiment]]])
+    issue_pred = model_issue.predict(features)[0]
+    urgency_pred = model_urgency.predict(features)[0]
+    entities = extract_entities(ticket_text)
+    return {
+        "issue_type": issue_pred,
+        "urgency_level": urgency_pred,
+        "entities": entities
+    }
+#  8. Test the Function
+test_ticket = "The delivery of the FlexiRouter was late and it stopped working on 2024-12-01."
+result = analyze_ticket(test_ticket)
+print("\nTest Ticket Analysis Result:")
+print(result)
+# 9. (Optional) Gradio UI
+try:
+    import gradio as gr
+    def gradio_interface(ticket_text):
+        return analyze_ticket(ticket_text)
+
+    iface = gr.Interface(fn=gradio_interface,
+                         inputs="textbox",
+                         outputs="json",
+                         title="Ticket Analyzer",
+                         description="Predict issue type, urgency, and extract entities.")
+    # Uncomment to launch in Colab
+    # iface.launch(share=True)
+except:
+    print("Gradio not installed or running in non-Colab environment.")
